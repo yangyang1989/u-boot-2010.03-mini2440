@@ -189,6 +189,7 @@ int board_init (void)
 #define LINEVAL_TFT_240320	(LCD_YSIZE_TFT_240320-1)
 
 //Timing parameter for NEC3.5"
+#if 0
 #define VBPD_240320		(3)		
 #define VFPD_240320		(10)
 #define VSPW_240320		(1)
@@ -200,28 +201,46 @@ int board_init (void)
 				      //+ ： -->    - : <--
 #define CLKVAL_TFT_240320	(3) 	
 //FCLK=101.25MHz,HCLK=50.625MHz,VCLK=6.33MHz
+#else
 
+#define CLKVAL_TFT_240320	(8)
+#define VBPD_240320		((1-1)&0xff)
+#define VFPD_240320		((5-1)&0xff)
+#define VSPW_240320		((10-1) &0x3f)
+#define HBPD_240320		((26-1)&0x7f)
+#define HFPD_240320		((1-1)&0xff)
+#define HSPW_240320		((5-1)&0xff)
+#endif
 
 void board_video_init(GraphicDevice *pGD) 
 { 
 	struct s3c24x0_lcd * const lcd	 = s3c24x0_get_base_lcd(); 
-	struct s3c2410_nand * const nand = s3c2410_get_base_nand();
-    /* FIXME: select LCM type by env variable */ 
+	struct s3c24x0_gpio * const gpio = s3c24x0_get_base_gpio();
+
+	
+	gpio->GPGCON |= (3<<8);
 	 
-	/* Configuration for GTA01 LCM on QT2410 */ 
 	lcd->LCDCON1 = 0x00000378; /* CLKVAL=4, BPPMODE=16bpp, TFT, ENVID=0 */ 
 	lcd->LCDCON2 = (VBPD_240320<<24)|(LINEVAL_TFT_240320<<14)|(VFPD_240320<<6)|(VSPW_240320); 
 	lcd->LCDCON3 = (HBPD_240320<<19)|(HOZVAL_TFT_240320<<8)|(HFPD_240320); 
-
+	#if 0
 	if ( (nand->NFCONF) & 0x08 )	{ 
 	lcd->LCDCON4 = (MVAL<<8)|(HSPW_240320_TD);
 	}
 	else	{
 	  lcd->LCDCON4 = (MVAL<<8)|(HSPW_240320_NEC);
 	}
-	
+	#else
+	lcd->LCDCON4 = HSPW_240320;
+	#endif
+
+	#if 0
 	lcd->LCDCON5 = 0x00000f09; 
-	lcd->LPCSEL  = 0x00000000; 
+	lcd->LPCSEL  = 0x00000000;
+	#else
+	lcd->LPCSEL  = 0x00000000;
+	lcd->LCDCON5 = 0x00000f49;
+	#endif
 } 
 
 
